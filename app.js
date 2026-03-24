@@ -1,6 +1,5 @@
 const titleParts = ["ハッピー", "バースデー"];
 const expectedHashHex = "bfe83b5501c5fc0ed756ad9c17238f42693027c05673fa032dde9f666c04828e";
-const successTextHex = "e8aa95e7949fe697a5e3818ae38281e381a7e381a8e38186";
 
 function base64ToBytes(base64) {
   const binary = atob(base64);
@@ -12,11 +11,6 @@ function textToBytes(text) {
 }
 
 function bytesToText(bytes) {
-  return new TextDecoder().decode(bytes);
-}
-
-function hexToText(hex) {
-  const bytes = new Uint8Array(hex.match(/.{1,2}/g).map((v) => parseInt(v, 16)));
   return new TextDecoder().decode(bytes);
 }
 
@@ -148,9 +142,8 @@ async function tryDecode() {
     const encryptedBytes = base64ToBytes(data.encrypted);
     const keyBytes = textToBytes(input);
     const decrypted = normalizeNewlines(bytesToText(xorDecrypt(encryptedBytes, keyBytes)));
-    const expectedMessage = hexToText(successTextHex);
 
-    if (inputHash === expectedHashHex && decrypted === expectedMessage) {
+    if (inputHash === expectedHashHex) {
       setStatus("Process completed successfully.", "ok");
       showResult(decrypted);
     } else {
