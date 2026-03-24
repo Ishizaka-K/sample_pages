@@ -88,7 +88,14 @@ function renderMessageByLine(message) {
     const row = document.createElement("div");
     row.className = "message-line";
     row.style.animationDelay = `${0.25 + index * 0.45}s`;
-    row.textContent = line || " ";
+
+    if (line === "") {
+      row.innerHTML = "&nbsp;"; // ←これ重要
+      row.classList.add("empty-line");
+    } else {
+      row.textContent = line;
+    }
+
     messageText.appendChild(row);
   });
 }
