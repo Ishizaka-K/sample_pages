@@ -277,17 +277,19 @@
       }
     }
 
-    .message {
+.message {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   font-size: 26px;
   line-height: 1.7;
   font-weight: 700;
   letter-spacing: 0.02em;
 }
 
-.empty-line {
-  height: 1.6em;
-}
 .message-line {
+  display: block;
+  width: 100%;
   opacity: 0;
   transform: translateY(10px);
   filter: blur(4px);
@@ -296,6 +298,12 @@
 
 .message-line + .message-line {
   margin-top: 6px;
+}
+
+.empty-line {
+  display: block;
+  width: 100%;
+  height: 1.6em;
 }
 
 @keyframes lineFadeIn {
