@@ -89,8 +89,7 @@ function renderMessageByLine(message) {
     row.className = "message-line";
     row.style.animationDelay = `${0.25 + index * 0.45}s`;
 
-    if (line === "") {
-      row.innerHTML = "&nbsp;"; // ←これ重要
+    if (line.trim() === "") {
       row.classList.add("empty-line");
     } else {
       row.textContent = line;
@@ -101,14 +100,20 @@ function renderMessageByLine(message) {
 }
 
 function showResult(message) {
-  const messageText = document.getElementById("messageText");
-  messageText.innerHTML = "";
+  const resultBox = document.getElementById("resultBox");
+  const titleText = document.getElementById("titleText");
 
-  message.split("\n").forEach((line) => {
-    const div = document.createElement("div");
-    div.textContent = line || "(empty)";
-    messageText.appendChild(div);
+  titleText.textContent = titleParts.join("・");
+  renderMessageByLine(message);
+
+  resultBox.classList.add("show");
+  resultBox.classList.remove("flash");
+
+  requestAnimationFrame(() => {
+    resultBox.classList.add("flash");
   });
+
+  createSparkles();
 }
 
 function createSparkles() {
