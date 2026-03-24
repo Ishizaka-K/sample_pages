@@ -290,10 +290,10 @@
 .message-line {
   display: block;
   width: 100%;
-  opacity: 1;
-  transform: none;
-  filter: none;
-  animation: none;
+  opacity: 0;
+  transform: translateY(10px);
+  filter: blur(4px);
+  animation: lineFadeIn 0.8s ease forwards;
 }
 
 .message-line + .message-line {
