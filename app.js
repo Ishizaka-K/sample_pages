@@ -22,7 +22,6 @@ function xorDecrypt(encryptedBytes, keyBytes) {
   return output;
 }
 
-// 超シンプルYAMLパーサ（今回用途限定）
 function parseYAML(yamlText) {
   const lines = yamlText.split("\n");
   let value = null;
@@ -30,10 +29,10 @@ function parseYAML(yamlText) {
   for (const line of lines) {
     const trimmed = line.trim();
 
-    if (trimmed.startsWith("#") || !trimmed) continue;
+    if (!trimmed || trimmed.startsWith("#")) continue;
 
     if (trimmed.startsWith("value:")) {
-      value = trimmed.split(":")[1].trim().replace(/"/g, "");
+      value = trimmed.slice("value:".length).trim().replace(/^["']|["']$/g, "");
     }
   }
 
@@ -55,7 +54,10 @@ async function tryDecode() {
 
   status.textContent = "";
   status.className = "";
+  status.style.color = "";
   resultBox.style.display = "none";
+  titleText.textContent = "";
+  messageText.textContent = "";
 
   if (!input) {
     status.textContent = "キーを入力してください。";
@@ -87,3 +89,8 @@ async function tryDecode() {
 }
 
 document.getElementById("decodeBtn").addEventListener("click", tryDecode);
+document.getElementById("keyInput").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    tryDecode();
+  }
+});
