@@ -1,9 +1,10 @@
-const validKey = "hapiba";
-const unlockedTitle = "ハッピーバースデーキー";
+const titleParts = ["ハッピー", "バースデー", "キー"];
+const expectedHashHex = "bfe83b5501c5fc0ed756ad9c17238f42693027c05673fa032dde9f666c04828e";
+const successTextHex = "e8aa95e7949fe697a5e3818ae38281e381a7e381a8e38186";
 
 function base64ToBytes(base64) {
   const binary = atob(base64);
-  return Uint8Array.from(binary, ch => ch.charCodeAt(0));
+  return Uint8Array.from(binary, (ch) => ch.charCodeAt(0));
 }
 
 function textToBytes(text) {
@@ -11,6 +12,11 @@ function textToBytes(text) {
 }
 
 function bytesToText(bytes) {
+  return new TextDecoder().decode(bytes);
+}
+
+function hexToText(hex) {
+  const bytes = new Uint8Array(hex.match(/.{1,2}/g).map((v) => parseInt(v, 16)));
   return new TextDecoder().decode(bytes);
 }
 
@@ -26,13 +32,12 @@ function parseYAML(yamlText) {
   const lines = yamlText.split("\n");
   let value = null;
 
-  for (const line of lines) {
-    const trimmed = line.trim();
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith("#")) continue;
 
-    if (!trimmed || trimmed.startsWith("#")) continue;
-
-    if (trimmed.startsWith("value:")) {
-      value = trimmed.slice("value:".length).trim().replace(/^["']|["']$/g, "");
+    if (line.startsWith("value:")) {
+      value = line.slice("value:".length).trim().replace(/^["']|["']$/g, "");
     }
   }
 
@@ -40,57 +45,107 @@ function parseYAML(yamlText) {
 }
 
 async function loadData() {
-  const res = await fetch("sample_data.yml");
+  const res = await fetch("./sample_data.yml");
+  if (!res.ok) {
+    throw new Error(`Failed to load sample_data.yml: ${res.status}`);
+  }
   const text = await res.text();
   return parseYAML(text);
 }
 
-async function tryDecode() {
-  const input = document.getElementById("keyInput").value;
+async function sha256Hex(text) {
+  const bytes = new TextEncoder().encode(text);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", bytes);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+function setStatus(text, type = "") {
   const status = document.getElementById("status");
+  status.textContent = text;
+  status.className = "status";
+  if (type) status.classList.add(type);
+}
+
+function clearResult() {
+  const resultBox = document.getElementById("resultBox");
+  const titleText = document.getElementById("titleText");
+  const messageText = document.getElementById("messageText");
+  const sparkles = document.getElementById("sparkles");
+
+  resultBox.classList.remove("show", "flash");
+  titleText.textContent = "";
+  messageText.textContent = "";
+  sparkles.innerHTML = "";
+}
+
+function showResult(message) {
   const resultBox = document.getElementById("resultBox");
   const titleText = document.getElementById("titleText");
   const messageText = document.getElementById("messageText");
 
-  status.textContent = "";
-  status.className = "";
-  status.style.color = "";
-  resultBox.style.display = "none";
-  titleText.textContent = "";
-  messageText.textContent = "";
+  titleText.textContent = titleParts.join("・");
+  messageText.textContent = message;
+
+  resultBox.classList.add("show");
+  resultBox.classList.remove("flash");
+
+  requestAnimationFrame(() => {
+    resultBox.classList.add("flash");
+  });
+
+  createSparkles();
+}
+
+function createSparkles() {
+  const sparkles = document.getElementById("sparkles");
+  sparkles.innerHTML = "";
+
+  const count = 18;
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement("span");
+    el.className = "sparkle";
+    el.style.left = `${8 + Math.random() * 84}%`;
+    el.style.top = `${12 + Math.random() * 58}%`;
+    el.style.animationDelay = `${Math.random() * 0.45}s`;
+    el.style.animationDuration = `${0.9 + Math.random() * 0.8}s`;
+    sparkles.appendChild(el);
+  }
+}
+
+async function tryDecode() {
+  const input = document.getElementById("keyInput").value.trim();
+
+  setStatus("");
+  clearResult();
 
   if (!input) {
-    status.textContent = "キーを入力してください。";
-    status.style.color = "red";
+    setStatus("キーを入力してください。", "ng");
     return;
   }
 
   try {
-    const data = await loadData();
+    const [data, inputHash] = await Promise.all([loadData(), sha256Hex(input)]);
     const encryptedBytes = base64ToBytes(data.encrypted);
     const keyBytes = textToBytes(input);
     const decrypted = bytesToText(xorDecrypt(encryptedBytes, keyBytes));
+    const expectedMessage = hexToText(successTextHex);
 
-    if (input === validKey && decrypted === "誕生日おめでとう") {
-      status.textContent = "OK";
-      status.style.color = "green";
-
-      titleText.textContent = unlockedTitle;
-      messageText.textContent = decrypted;
-      resultBox.style.display = "block";
+    if (inputHash === expectedHashHex && decrypted === expectedMessage) {
+      setStatus("Process completed successfully.", "ok");
+      showResult(decrypted);
     } else {
-      status.textContent = "NG";
-      status.style.color = "red";
+      setStatus("Process failed. Invalid key.", "ng");
     }
-  } catch (e) {
-    status.textContent = "ERROR";
-    status.style.color = "red";
+  } catch (error) {
+    console.error(error);
+    setStatus("Process error. Check resource path.", "ng");
   }
 }
 
 document.getElementById("decodeBtn").addEventListener("click", tryDecode);
-document.getElementById("keyInput").addEventListener("keydown", (e) => {
-  if (e.key === "Enter") {
+document.getElementById("keyInput").addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
     tryDecode();
   }
 });
