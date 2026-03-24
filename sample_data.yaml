@@ -1,0 +1,9 @@
+# 複合化成功時の「成功！」の文字
+
+payload:
+  # encoded data
+  value: "nq35v+35jqj6q5jnr+jnso4="
+
+meta:
+  version: 1
+  type: text
