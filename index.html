@@ -276,6 +276,37 @@
         font-size: 22px;
       }
     }
+
+    .message {
+  font-size: 26px;
+  line-height: 1.7;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.message-line {
+  opacity: 0;
+  transform: translateY(10px);
+  filter: blur(4px);
+  animation: lineFadeIn 0.8s ease forwards;
+}
+
+.message-line + .message-line {
+  margin-top: 6px;
+}
+
+@keyframes lineFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
   </style>
 </head>
 <body>

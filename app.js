@@ -60,6 +60,10 @@ async function sha256Hex(text) {
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+function normalizeNewlines(text) {
+  return text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+}
+
 function setStatus(text, type = "") {
   const status = document.getElementById("status");
   status.textContent = text;
@@ -75,17 +79,32 @@ function clearResult() {
 
   resultBox.classList.remove("show", "flash");
   titleText.textContent = "";
-  messageText.textContent = "";
+  messageText.innerHTML = "";
   sparkles.innerHTML = "";
+}
+
+function renderMessageByLine(message) {
+  const messageText = document.getElementById("messageText");
+  messageText.innerHTML = "";
+
+  const normalized = normalizeNewlines(message);
+  const lines = normalized.split("\n");
+
+  lines.forEach((line, index) => {
+    const row = document.createElement("div");
+    row.className = "message-line";
+    row.style.animationDelay = `${0.25 + index * 0.45}s`;
+    row.textContent = line || " ";
+    messageText.appendChild(row);
+  });
 }
 
 function showResult(message) {
   const resultBox = document.getElementById("resultBox");
   const titleText = document.getElementById("titleText");
-  const messageText = document.getElementById("messageText");
 
   titleText.textContent = titleParts.join("・");
-  messageText.textContent = message;
+  renderMessageByLine(message);
 
   resultBox.classList.add("show");
   resultBox.classList.remove("flash");
@@ -128,7 +147,7 @@ async function tryDecode() {
     const [data, inputHash] = await Promise.all([loadData(), sha256Hex(input)]);
     const encryptedBytes = base64ToBytes(data.encrypted);
     const keyBytes = textToBytes(input);
-    const decrypted = bytesToText(xorDecrypt(encryptedBytes, keyBytes));
+    const decrypted = normalizeNewlines(bytesToText(xorDecrypt(encryptedBytes, keyBytes)));
     const expectedMessage = hexToText(successTextHex);
 
     if (inputHash === expectedHashHex && decrypted === expectedMessage) {
