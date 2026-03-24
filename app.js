@@ -40,7 +40,7 @@ function parseYAML(yamlText) {
 }
 
 async function loadData() {
-  const res = await fetch("data.yml");
+  const res = await fetch("sample_data.yml");
   const text = await res.text();
   return parseYAML(text);
 }
