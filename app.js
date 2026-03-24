@@ -101,20 +101,14 @@ function renderMessageByLine(message) {
 }
 
 function showResult(message) {
-  const resultBox = document.getElementById("resultBox");
-  const titleText = document.getElementById("titleText");
+  const messageText = document.getElementById("messageText");
+  messageText.innerHTML = "";
 
-  titleText.textContent = titleParts.join("・");
-  renderMessageByLine(message);
-
-  resultBox.classList.add("show");
-  resultBox.classList.remove("flash");
-
-  requestAnimationFrame(() => {
-    resultBox.classList.add("flash");
+  message.split("\n").forEach((line) => {
+    const div = document.createElement("div");
+    div.textContent = line || "(empty)";
+    messageText.appendChild(div);
   });
-
-  createSparkles();
 }
 
 function createSparkles() {
