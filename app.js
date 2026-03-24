@@ -1,4 +1,4 @@
-const titleParts = ["ハッピー", "バースデー", "キー"];
+const titleParts = ["ハッピー", "バースデー"];
 const expectedHashHex = "bfe83b5501c5fc0ed756ad9c17238f42693027c05673fa032dde9f666c04828e";
 const successTextHex = "e8aa95e7949fe697a5e3818ae38281e381a7e381a8e38186";
 
